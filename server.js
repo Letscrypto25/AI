@@ -45,6 +45,7 @@ function resolveAdvertisedUrl(port) {
 }
 
 function loadSystemContext() {
+  const oldContext = systemContext;
   systemContext = '';
 
   try {
@@ -63,13 +64,40 @@ function loadSystemContext() {
       }
     }
 
-    console.log('System context loaded');
+    if (oldContext !== systemContext) {
+      console.log('System context updated');
+    }
   } catch (err) {
     console.error('Error loading system context:', err.message);
   }
 
   return systemContext;
 }
+
+function runHeartbeat() {
+  const now = new Date();
+  const timestamp = now.toLocaleString();
+  
+  // Reload context
+  loadSystemContext();
+
+  // Update timeline.md
+  try {
+    const timelinePath = path.join(__dirname, 'Actions', 'timeline.md');
+    if (fs.existsSync(timelinePath)) {
+      const entry = `- [${timestamp}] Heartbeat: Context reloaded. /ide is active.\n`;
+      fs.appendFileSync(timelinePath, entry);
+    }
+  } catch (err) {
+    console.error('Heartbeat timeline update failed:', err.message);
+  }
+
+  console.log(`Heartbeat completed at ${timestamp}`);
+}
+
+// Start heartbeat every 15 minutes as requested
+const HEARTBEAT_INTERVAL = 15 * 60 * 1000;
+setInterval(runHeartbeat, HEARTBEAT_INTERVAL);
 
 const personas = {
   joe: { label: 'Joe' },
