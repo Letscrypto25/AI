@@ -1,0 +1,40 @@
+{
+  "name": "CommandRegistry",
+  "type": "object",
+  "properties": {
+    "command_name": {
+      "type": "string",
+      "enum": [
+        "READ",
+        "PROPOSE_VALUE_CHANGE",
+        "FLAG_ANOMALY",
+        "SUMMARIZE_LOGS",
+        "REQUEST_ROLLBACK",
+        "ASK_FOR_CLARIFICATION",
+        "DRY_RUN"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "requires_approval": {
+      "type": "boolean"
+    },
+    "guardrail_rules": {
+      "type": "string"
+    },
+    "example_triggers": {
+      "type": "string"
+    },
+    "usage_count": {
+      "type": "number"
+    },
+    "is_admin_only": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "command_name",
+    "description"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "ActionLog",
+  "type": "object",
+  "properties": {
+    "entry_number": {
+      "type": "number"
+    },
+    "user": {
+      "type": "string"
+    },
+    "request": {
+      "type": "string"
+    },
+    "action_taken": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "done",
+        "blocked",
+        "partial",
+        "info"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "request",
+    "outcome"
+  ]
+}

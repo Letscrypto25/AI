@@ -1,0 +1,84 @@
+{
+  "name": "Job",
+  "type": "object",
+  "properties": {
+    "job_number": {
+      "type": "number"
+    },
+    "requested_by": {
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "command_type": {
+      "type": "string",
+      "enum": [
+        "READ",
+        "PROPOSE_VALUE_CHANGE",
+        "FLAG_ANOMALY",
+        "SUMMARIZE_LOGS",
+        "REQUEST_ROLLBACK",
+        "ASK_FOR_CLARIFICATION",
+        "DRY_RUN"
+      ]
+    },
+    "proposed_change": {
+      "type": "string"
+    },
+    "context_snapshot": {
+      "type": "string"
+    },
+    "guardrail_verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warn",
+        "block"
+      ]
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "done"
+      ],
+      "default": "pending"
+    },
+    "developer_note": {
+      "type": "string"
+    },
+    "admin_private_note": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "previous_value": {
+      "type": "string"
+    },
+    "new_value": {
+      "type": "string"
+    },
+    "is_dry_run": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "intent",
+    "command_type",
+    "status"
+  ]
+}

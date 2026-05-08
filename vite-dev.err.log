@@ -1,0 +1,21 @@
+NODE_ENV=production is not supported in the .env file. Only NODE_ENV=development is supported to create a development build of your project. If you need to set process.env.NODE_ENV, you can set it in the Vite config instead.
+Error: [31m  Failed to scan for dependencies from entries:
+  C:/Users/ethan/Saved Games/AI/index.html
+
+  [39m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mExpected identifier but found "!"[0m
+
+    src/pages/HelperBot.jsx:1:1:
+[37m      1 │ <[32m![37mDOCTYPE html>
+        ╵  [32m^[0m
+
+
+    at failureErrorWithLog (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:1472:15)
+    at C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:945:25
+    at runOnEndCallbacks (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:1315:45)
+    at buildResponseToResult (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:943:7)
+    at C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:955:9
+    at new Promise (<anonymous>)
+    at requestCallbacks.on-end (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:954:54)
+    at handleRequest (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:647:17)
+    at handleIncomingPacket (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:672:7)
+    at Socket.readFromStdout (C:\Users\ethan\Saved Games\AI\node_modules\esbuild\lib\main.js:600:7)
