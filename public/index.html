@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>/ide Chat - Joe & Davis</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 180, 90, 0.25), transparent 28%),
+        linear-gradient(135deg, #101828 0%, #1f2937 45%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #0f172a;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 20px;
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.35);
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .header {
+      background:
+        radial-gradient(circle at top right, rgba(251, 191, 36, 0.25), transparent 30%),
+        linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+      color: white;
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.92;
+      max-width: 560px;
+    }
+
+    .persona-select {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .persona-btn {
+      padding: 9px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .persona-btn.active {
+      background: white;
+      color: #0f766e;
+      transform: translateY(-1px);
+    }
+
+    .persona-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .status {
+      font-size: 12px;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.95);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background:
+        linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(241, 245, 249, 0.96) 100%);
+    }
+
+    .message {
+      display: flex;
+      animation: slideIn 0.22s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.assistant {
+      justify-content: flex-start;
+    }
+
+    .message-content {
+      max-width: min(78%, 680px);
+      padding: 14px 16px;
+      border-radius: 18px;
+      line-height: 1.55;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+
+    .user .message-content {
+      background: linear-gradient(135deg, #0f766e 0%, #1d4ed8 100%);
+      color: white;
+      box-shadow: 0 10px 24px rgba(15, 118, 110, 0.2);
+    }
+
+    .assistant .message-content {
+      background: white;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: #1e293b;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .message-meta {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .loading {
+      display: flex;
+      gap: 4px;
+      padding: 12px 16px;
+    }
+
+    .loading span {
+      width: 8px;
+      height: 8px;
+      background: #0f766e;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite;
+    }
+
+    .loading span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    .input-area {
+      padding: 18px 20px 20px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      display: flex;
+      gap: 10px;
+      background: white;
+    }
+
+    input {
+      flex: 1;
+      padding: 14px 16px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 14px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #0f766e;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    #sendBtn {
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #sendBtn:hover {
+      transform: translateY(-1px);
+    }
+
+    #sendBtn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 0;
+      }
+
+      .container {
+        height: 100vh;
+        max-width: none;
+        border-radius: 0;
+      }
+
+      .header-top,
+      .input-area {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .message-content {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-top">
+        <div class="title-wrap">
+          <div class="title">/ide Chat</div>
+          <div class="subtitle">Groq is primary, DeepSeek is fallback, and Joe plus Davis stay on one local coding surface.</div>
+        </div>
+        <div class="persona-select">
+          <button class="persona-btn active" data-persona="joe">Joe</button>
+          <button class="persona-btn" data-persona="davis">Davis</button>
+        </div>
+      </div>
+      <div class="status" id="statusBar">Checking /ide provider status...</div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="message assistant">
+        <div class="message-content">
+          Hi, I'm Joe. I read the /ide workspace context, follow the Actions workflow, and answer through the Groq-first provider stack. Switch to Davis any time.
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="messageInput" placeholder="Type your message..." />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatArea = document.getElementById('chatArea');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const personaBtns = document.querySelectorAll('.persona-btn');
+    const statusBar = document.getElementById('statusBar');
+
+    let currentPersona = 'joe';
+    let conversationHistory = [];
+    let isLoading = false;
+
+    function getGreeting(persona) {
+      if (persona === 'joe') {
+        return "Hi, I'm Joe. I read the /ide workspace context, follow the Actions workflow, and answer through the Groq-first provider stack.";
+      }
+
+      return "Hi, I'm Davis. I use the same /ide workspace context, with DeepSeek ready if Groq needs backup.";
+    }
+
+    function setStatus(text) {
+      statusBar.textContent = text;
+    }
+
+    async function refreshHealth() {
+      try {
+        const response = await fetch('/api/health');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Health check failed');
+        }
+
+        const readyProviders = (data.providers || [])
+          .filter(provider => provider.configured)
+          .map(provider => `${provider.label}: ${provider.model}`);
+
+        if (readyProviders.length === 0) {
+          setStatus('No provider keys are configured in /ide/.env yet.');
+          return;
+        }
+
+        setStatus(`Ready in /ide with ${readyProviders.join(' | ')}`);
+      } catch (error) {
+        setStatus(`Health check failed: ${error.message}`);
+      }
+    }
+
+    personaBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        personaBtns.forEach(button => button.classList.remove('active'));
+        btn.classList.add('active');
+        currentPersona = btn.dataset.persona;
+        conversationHistory = [];
+        chatArea.innerHTML = `
+          <div class="message assistant">
+            <div class="message-content">${escapeHtml(getGreeting(currentPersona))}</div>
+          </div>
+        `;
+        setStatus(`Active persona: ${currentPersona === 'joe' ? 'Joe' : 'Davis'}`);
+      });
+    });
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message || isLoading) return;
+
+      const userDiv = document.createElement('div');
+      userDiv.className = 'message user';
+      userDiv.innerHTML = `<div class="message-content">${escapeHtml(message)}</div>`;
+      chatArea.appendChild(userDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      messageInput.value = '';
+      isLoading = true;
+      sendBtn.disabled = true;
+      conversationHistory.push({ role: 'user', content: message });
+
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message assistant';
+      loadingDiv.innerHTML = '<div class="loading"><span></span><span></span><span></span></div>';
+      chatArea.appendChild(loadingDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            persona: currentPersona,
+            history: conversationHistory,
+          }),
+        });
+
+        const data = await response.json();
+        loadingDiv.remove();
+
+        if (!response.ok) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'message assistant';
+          errorDiv.innerHTML = `<div class="message-content error">Error: ${escapeHtml(data.error || 'Unknown error')}</div>`;
+          chatArea.appendChild(errorDiv);
+          setStatus(`Request failed: ${data.error || 'Unknown error'}`);
+        } else {
+          const assistantDiv = document.createElement('div');
+          assistantDiv.className = 'message assistant';
+          assistantDiv.innerHTML = `
+            <div class="message-content">
+              ${escapeHtml(data.content)}
+              <div class="message-meta">${escapeHtml(`${data.personaLabel || 'Assistant'} via ${data.providerLabel || 'provider'} (${data.model || 'model'})`)}</div>
+            </div>
+          `;
+          chatArea.appendChild(assistantDiv);
+
+          conversationHistory.push({ role: 'assistant', content: data.content });
+          setStatus(`Last response: ${data.providerLabel || 'Provider'} using ${data.model || 'configured model'}`);
+        }
+      } catch (error) {
+        loadingDiv.remove();
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'message assistant';
+        errorDiv.innerHTML = `<div class="message-content error">Connection error: ${escapeHtml(error.message)}</div>`;
+        chatArea.appendChild(errorDiv);
+        setStatus(`Connection error: ${error.message}`);
+      }
+
+      isLoading = false;
+      sendBtn.disabled = false;
+      chatArea.scrollTop = chatArea.scrollHeight;
+      messageInput.focus();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    messageInput.focus();
+    refreshHealth();
+  </script>
+</body>
+</html>

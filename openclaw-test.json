@@ -1,0 +1,14 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "C:\\Users\\ethan\\Saved Games\\ide",
+      "repoRoot": "C:\\Users\\ethan\\Saved Games\\ide",
+      "model": {
+        "primary": "openai-codex/gpt-5.4"
+      }
+    }
+  },
+  "tools": {
+    "profile": "coding"
+  }
+}
