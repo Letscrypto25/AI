@@ -18,7 +18,7 @@ export default function ChatInterface() {
     setLoading(true);
 
     try {
-      const response = await fetch('https://crypto-bot-2-production.up.railway.app/api/bot/settings-chat', {
+      const response = await fetch('https://lets-trade-six.vercel.app/api/bot/settings-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
