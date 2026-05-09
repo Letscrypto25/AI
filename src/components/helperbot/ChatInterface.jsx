@@ -18,7 +18,8 @@ export default function ChatInterface() {
     setLoading(true);
 
     try {
-      const response = await fetch('https://lets-trade-six.vercel.app/api/bot/settings-chat', {
+      const baseUrl = import.meta.env.VITE_APP_URL || '';
+      const response = await fetch(`${baseUrl}/api/bot/settings-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
