@@ -1,0 +1,8 @@
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L2] Assistant: ⚠️ Agent failed before reply: Unknown model: ollama/qwen2.5-coder:1.5b. Ollama requires authentication to be registered as a provider. Set OLLAMA_API_KEY="***" (any value works) or run "openclaw configure". See: https://docs.openclaw.ai/providers/ollama. Logs: openc
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L13] Assistant: [assistant turn failed before producing content]
+[main/sessions/main/1fa716e9-1b5b-4874-a430-2622ee12a89d.jsonl#L18] User: [System] Your previous turn was interrupted by a gateway restart while OpenClaw was waiting on tool/model work. Continue from the existing transcript and finish the interrupted response.
+[main/sessions/main/e2f7c3c0-099a-4287-bfc6-6cf33c7ad45d.jsonl#L5] User: What can you do?
