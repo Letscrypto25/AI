@@ -29,6 +29,22 @@ create table if not exists public.buddy_projects (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.buddy_diary_pages (
+  id uuid primary key default gen_random_uuid(),
+  diary_date date not null unique,
+  quote text not null default '',
+  title text not null default '',
+  raw_text text not null default '',
+  ai_summary text not null default '',
+  ai_categories text[] not null default '{}',
+  important_thoughts text[] not null default '{}',
+  decisions text[] not null default '{}',
+  tasks text[] not null default '{}',
+  linked_note_ids uuid[] not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.buddy_command_logs (
   id uuid primary key default gen_random_uuid(),
   project_id uuid,
@@ -59,8 +75,14 @@ create trigger buddy_projects_updated_at
 before update on public.buddy_projects
 for each row execute function public.set_buddy_updated_at();
 
+drop trigger if exists buddy_diary_pages_updated_at on public.buddy_diary_pages;
+create trigger buddy_diary_pages_updated_at
+before update on public.buddy_diary_pages
+for each row execute function public.set_buddy_updated_at();
+
 alter table public.buddy_notes enable row level security;
 alter table public.buddy_projects enable row level security;
+alter table public.buddy_diary_pages enable row level security;
 alter table public.buddy_command_logs enable row level security;
 
 drop policy if exists "service role manages buddy notes" on public.buddy_notes;
@@ -73,6 +95,13 @@ with check (auth.role() = 'service_role');
 drop policy if exists "service role manages buddy projects" on public.buddy_projects;
 create policy "service role manages buddy projects"
 on public.buddy_projects
+for all
+using (auth.role() = 'service_role')
+with check (auth.role() = 'service_role');
+
+drop policy if exists "service role manages buddy diary pages" on public.buddy_diary_pages;
+create policy "service role manages buddy diary pages"
+on public.buddy_diary_pages
 for all
 using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');

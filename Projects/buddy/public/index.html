@@ -85,15 +85,48 @@
 
         <aside class="pane assistant-pane">
           <div class="tabs">
-            <button class="tab-button active" data-tab="chat">Chat</button>
+            <button class="tab-button active" data-tab="diary">Diary</button>
+            <button class="tab-button" data-tab="chat">Chat</button>
             <button class="tab-button" data-tab="projects">Projects</button>
             <button class="tab-button" data-tab="terminal">Terminal</button>
           </div>
 
-          <section id="chatTab" class="tab-panel active">
+          <section id="diaryTab" class="tab-panel active">
+            <div class="diary-book">
+              <div class="diary-nav">
+                <button id="previousDiaryButton" title="Previous day">Prev</button>
+                <input id="diaryDateInput" type="date">
+                <button id="todayDiaryButton">Today</button>
+                <button id="nextDiaryButton" title="Next day">Next</button>
+              </div>
+              <div class="diary-page">
+                <div class="diary-page-head">
+                  <span id="diaryDisplayDate"></span>
+                  <p id="diaryQuote"></p>
+                </div>
+                <input id="diaryTitleInput" class="diary-title" type="text" placeholder="Diary title">
+                <textarea id="diaryRawInput" class="diary-raw" placeholder="Write today's page here. Buddy will keep it linked to this date."></textarea>
+                <textarea id="diarySummaryInput" class="diary-summary" placeholder="AI summary or cleaned version"></textarea>
+                <input id="diaryCategoriesInput" type="text" placeholder="Categories, comma separated">
+                <textarea id="diaryThoughtsInput" class="diary-small" placeholder="Important thoughts, one per line"></textarea>
+                <textarea id="diaryDecisionsInput" class="diary-small" placeholder="Decisions, one per line"></textarea>
+                <textarea id="diaryTasksInput" class="diary-small" placeholder="Tasks, one per line"></textarea>
+                <div class="button-row">
+                  <button id="saveDiaryButton">Save Diary Page</button>
+                  <button id="organizeDiaryButton">Organize With AI</button>
+                </div>
+              </div>
+              <div class="linked-notes">
+                <h3>Notes On This Date</h3>
+                <div id="diaryLinkedNotes"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="chatTab" class="tab-panel">
             <div id="chatLog" class="chat-log"></div>
             <div class="prompt-row">
-              <input id="chatInput" type="text" placeholder="Ask Buddy about saved notes">
+              <input id="chatInput" type="text" placeholder="Ask Buddy about saved notes and diary pages">
               <button id="sendChatButton">Ask</button>
             </div>
           </section>

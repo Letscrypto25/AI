@@ -60,11 +60,43 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 const TABLES = {
   notes: 'buddy_notes',
   projects: 'buddy_projects',
-  commands: 'buddy_command_logs'
+  commands: 'buddy_command_logs',
+  diaryPages: 'buddy_diary_pages'
 };
+
+const DAILY_QUOTES = [
+  'Write it down. The pattern will show itself later.',
+  'Small notes become maps when you keep them.',
+  'Today only needs one honest page.',
+  'Messy thoughts are still useful material.',
+  'Memory gets stronger when it has a place to land.',
+  'Make the day visible, then make it simple.',
+  'A clear page can hold a chaotic mind.',
+  'Keep the raw thought. Shape it after.',
+  'The next step is hiding inside the notes.',
+  'Order comes after capture.'
+];
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function todayDateString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isDateString(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
+}
+
+function normalizeDiaryDate(value) {
+  return isDateString(value) ? value : todayDateString();
+}
+
+function dailyQuote(dateString) {
+  const score = [...String(dateString || todayDateString())]
+    .reduce((total, char) => total + char.charCodeAt(0), 0);
+  return DAILY_QUOTES[score % DAILY_QUOTES.length];
 }
 
 function hasSupabase() {
@@ -115,7 +147,7 @@ async function ensureLocalStore() {
   try {
     await stat(DATA_FILE);
   } catch {
-    await writeFile(DATA_FILE, JSON.stringify({ notes: [], projects: [], commands: [] }, null, 2));
+    await writeFile(DATA_FILE, JSON.stringify({ notes: [], projects: [], commands: [], diary_pages: [] }, null, 2));
   }
 }
 
@@ -126,7 +158,8 @@ async function readLocalStore() {
   return {
     notes: Array.isArray(data.notes) ? data.notes : [],
     projects: Array.isArray(data.projects) ? data.projects : [],
-    commands: Array.isArray(data.commands) ? data.commands : []
+    commands: Array.isArray(data.commands) ? data.commands : [],
+    diary_pages: Array.isArray(data.diary_pages) ? data.diary_pages : []
   };
 }
 
@@ -232,6 +265,180 @@ async function deleteNote(id) {
   data.notes = data.notes.filter((note) => note.id !== id);
   await writeLocalStore(data);
   return data.notes.length !== before;
+}
+
+function noteDate(note) {
+  return String(note.created_at || '').slice(0, 10);
+}
+
+async function notesForDate(dateString) {
+  const notes = await listNotes({});
+  return notes.filter((note) => noteDate(note) === dateString);
+}
+
+function defaultDiaryPage(dateString) {
+  return {
+    diary_date: dateString,
+    quote: dailyQuote(dateString),
+    title: `Diary - ${dateString}`,
+    raw_text: '',
+    ai_summary: '',
+    ai_categories: [],
+    important_thoughts: [],
+    decisions: [],
+    tasks: [],
+    linked_note_ids: [],
+    created_at: nowIso(),
+    updated_at: nowIso()
+  };
+}
+
+function normalizeDiaryPage(page, dateString) {
+  return {
+    ...defaultDiaryPage(dateString),
+    ...page,
+    diary_date: page?.diary_date || dateString,
+    quote: page?.quote || dailyQuote(dateString),
+    ai_categories: Array.isArray(page?.ai_categories) ? page.ai_categories : [],
+    important_thoughts: Array.isArray(page?.important_thoughts) ? page.important_thoughts : [],
+    decisions: Array.isArray(page?.decisions) ? page.decisions : [],
+    tasks: Array.isArray(page?.tasks) ? page.tasks : [],
+    linked_note_ids: Array.isArray(page?.linked_note_ids) ? page.linked_note_ids : []
+  };
+}
+
+async function listDiaryPages(limit = 30) {
+  if (hasSupabase()) {
+    try {
+      return (await supabaseRequest(
+        TABLES.diaryPages,
+        `?select=*&order=diary_date.desc&limit=${encodeURIComponent(limit)}`
+      )) || [];
+    } catch (error) {
+      console.warn(error.message);
+    }
+  }
+  const data = await readLocalStore();
+  return data.diary_pages
+    .sort((a, b) => String(b.diary_date).localeCompare(String(a.diary_date)))
+    .slice(0, limit);
+}
+
+async function getDiaryPage(dateValue) {
+  const dateString = normalizeDiaryDate(dateValue);
+  let page = null;
+  if (hasSupabase()) {
+    try {
+      const rows = await supabaseRequest(
+        TABLES.diaryPages,
+        `?diary_date=eq.${encodeURIComponent(dateString)}&select=*&limit=1`
+      );
+      page = rows?.[0] || null;
+    } catch (error) {
+      console.warn(error.message);
+    }
+  } else {
+    const data = await readLocalStore();
+    page = data.diary_pages.find((entry) => entry.diary_date === dateString) || null;
+  }
+  const linkedNotes = await notesForDate(dateString);
+  const normalized = normalizeDiaryPage(page, dateString);
+  normalized.linked_note_ids = linkedNotes.map((note) => note.id).filter(Boolean);
+  return { page: normalized, linked_notes: linkedNotes };
+}
+
+async function saveDiaryPage(dateValue, patch) {
+  const dateString = normalizeDiaryDate(dateValue);
+  const existing = (await getDiaryPage(dateString)).page;
+  const page = normalizeDiaryPage({
+    ...existing,
+    ...patch,
+    diary_date: dateString,
+    quote: patch.quote || existing.quote || dailyQuote(dateString),
+    updated_at: nowIso()
+  }, dateString);
+
+  if (hasSupabase()) {
+    const rows = await supabaseRequest(TABLES.diaryPages, '?on_conflict=diary_date', {
+      method: 'POST',
+      headers: { prefer: 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(page)
+    });
+    return (await getDiaryPage(dateString)).linked_notes.length
+      ? { page: rows?.[0] || page, linked_notes: (await getDiaryPage(dateString)).linked_notes }
+      : { page: rows?.[0] || page, linked_notes: [] };
+  }
+
+  const data = await readLocalStore();
+  const index = data.diary_pages.findIndex((entry) => entry.diary_date === dateString);
+  if (index === -1) data.diary_pages.unshift({ ...page, id: randomUUID(), created_at: nowIso() });
+  else data.diary_pages[index] = { ...data.diary_pages[index], ...page };
+  await writeLocalStore(data);
+  return getDiaryPage(dateString);
+}
+
+async function organizeDiaryPage(dateValue) {
+  const dateString = normalizeDiaryDate(dateValue);
+  const { page, linked_notes: linkedNotes } = await getDiaryPage(dateString);
+  const text = [
+    page.raw_text,
+    ...linkedNotes.map((note) => `${note.clean_title}: ${note.raw_text || note.summary}`)
+  ].join('\n\n').trim();
+
+  if (!text) {
+    return saveDiaryPage(dateString, {
+      ...page,
+      ai_summary: '',
+      ai_categories: [],
+      important_thoughts: [],
+      decisions: [],
+      tasks: []
+    });
+  }
+
+  if (!hasGroq()) {
+    return saveDiaryPage(dateString, {
+      ...page,
+      ai_summary: text.replace(/\s+/g, ' ').slice(0, 500),
+      ai_categories: [...new Set(linkedNotes.map((note) => note.category).filter(Boolean))].slice(0, 12),
+      important_thoughts: linkedNotes.slice(0, 6).map((note) => note.clean_title || note.summary || note.raw_text).filter(Boolean),
+      decisions: [],
+      tasks: linkedNotes.filter((note) => note.category === 'To-do items').map((note) => note.clean_title).filter(Boolean)
+    });
+  }
+
+  const result = await groqJson([
+    {
+      role: 'system',
+      content: [
+        'You organize one private diary day for Buddy.',
+        'Return JSON only with ai_summary, ai_categories, important_thoughts, decisions, tasks.',
+        'Keep the original raw text unchanged. Be practical and concise.'
+      ].join(' ')
+    },
+    {
+      role: 'user',
+      content: JSON.stringify({
+        diary_date: dateString,
+        raw_diary_text: page.raw_text,
+        linked_notes: linkedNotes.map((note) => ({
+          title: note.clean_title,
+          category: note.category,
+          summary: note.summary,
+          raw_text: note.raw_text
+        }))
+      })
+    }
+  ]);
+
+  return saveDiaryPage(dateString, {
+    ...page,
+    ai_summary: String(result.ai_summary || page.ai_summary || '').slice(0, 4000),
+    ai_categories: Array.isArray(result.ai_categories) ? result.ai_categories.map(String).slice(0, 24) : page.ai_categories,
+    important_thoughts: Array.isArray(result.important_thoughts) ? result.important_thoughts.map(String).slice(0, 40) : page.important_thoughts,
+    decisions: Array.isArray(result.decisions) ? result.decisions.map(String).slice(0, 40) : page.decisions,
+    tasks: Array.isArray(result.tasks) ? result.tasks.map(String).slice(0, 40) : page.tasks
+  });
 }
 
 async function listProjects() {
@@ -444,15 +651,31 @@ function relevantNotes(notes, query, limit = 16) {
     .map((item) => item.note);
 }
 
-async function answerFromNotes(message) {
+async function answerFromMemory(message) {
   const notes = await listNotes({});
   const picked = relevantNotes(notes, message, 20);
+  const diaryPages = await listDiaryPages(20);
+  const diaryContext = diaryPages.filter((page) => {
+    const blob = [
+      page.diary_date,
+      page.title,
+      page.raw_text,
+      page.ai_summary,
+      ...(page.ai_categories || []),
+      ...(page.important_thoughts || []),
+      ...(page.decisions || []),
+      ...(page.tasks || [])
+    ].join(' ');
+    return scoreNote({ raw_text: blob }, message) > 0;
+  });
   const context = picked.length ? picked : notes.slice(0, 12);
+  const diaryPicked = diaryContext.length ? diaryContext : diaryPages.slice(0, 8);
   if (!hasGroq()) {
-    if (!context.length) return 'I do not have saved notes yet. Add a note first, then ask me again.';
+    if (!context.length && !diaryPicked.length) return 'I do not have saved notes or diary pages yet. Add something first, then ask me again.';
     return [
-      'I found these related notes:',
-      ...context.slice(0, 5).map((note) => `- ${note.clean_title}: ${note.summary}`)
+      'I found this saved memory:',
+      ...context.slice(0, 5).map((note) => `- ${note.clean_title}: ${note.summary}`),
+      ...diaryPicked.slice(0, 3).map((page) => `- Diary ${page.diary_date}: ${page.ai_summary || page.raw_text || page.title}`)
     ].join('\n');
   }
   return groqText([
@@ -460,8 +683,9 @@ async function answerFromNotes(message) {
       role: 'system',
       content: [
         'You are Buddy, a private AI notebook assistant.',
-        'Answer from the supplied saved notes first.',
-        'If the notes do not contain the answer, say that clearly and suggest what to capture next.',
+        'Answer from the supplied saved notes and diary pages first.',
+        'If Ethan asks you to edit a diary page, describe the exact edit needed unless an edit API call is available.',
+        'If the memory does not contain the answer, say that clearly and suggest what to capture next.',
         'Be concise and practical.'
       ].join(' ')
     },
@@ -477,6 +701,18 @@ async function answerFromNotes(message) {
           project: note.project,
           tags: note.tags,
           raw_text: note.raw_text
+        })),
+        diary_pages: diaryPicked.map((page) => ({
+          id: page.id,
+          diary_date: page.diary_date,
+          title: page.title,
+          quote: page.quote,
+          raw_text: page.raw_text,
+          ai_summary: page.ai_summary,
+          ai_categories: page.ai_categories,
+          important_thoughts: page.important_thoughts,
+          decisions: page.decisions,
+          tasks: page.tasks
         }))
       })
     }
@@ -811,8 +1047,42 @@ async function handleApi(req, res, url) {
       sendError(res, 400, 'Message is required.');
       return;
     }
-    const answer = await answerFromNotes(message);
+    const answer = await answerFromMemory(message);
     sendJson(res, 200, { answer });
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/diary') {
+    const date = normalizeDiaryDate(url.searchParams.get('date'));
+    const diary = await getDiaryPage(date);
+    sendJson(res, 200, diary);
+    return;
+  }
+
+  if (req.method === 'PUT' && url.pathname === '/api/diary') {
+    if (!requireAuth(req, res)) return;
+    const body = await readBody(req);
+    const date = normalizeDiaryDate(body.diary_date || body.date);
+    const diary = await saveDiaryPage(date, {
+      title: String(body.title || `Diary - ${date}`).slice(0, 160),
+      quote: String(body.quote || dailyQuote(date)).slice(0, 300),
+      raw_text: String(body.raw_text || '').slice(0, 40000),
+      ai_summary: String(body.ai_summary || '').slice(0, 4000),
+      ai_categories: Array.isArray(body.ai_categories) ? body.ai_categories.map(String).slice(0, 24) : [],
+      important_thoughts: Array.isArray(body.important_thoughts) ? body.important_thoughts.map(String).slice(0, 40) : [],
+      decisions: Array.isArray(body.decisions) ? body.decisions.map(String).slice(0, 40) : [],
+      tasks: Array.isArray(body.tasks) ? body.tasks.map(String).slice(0, 40) : []
+    });
+    sendJson(res, 200, diary);
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/diary/organize') {
+    if (!requireAuth(req, res)) return;
+    const body = await readBody(req);
+    const date = normalizeDiaryDate(body.diary_date || body.date);
+    const diary = await organizeDiaryPage(date);
+    sendJson(res, 200, diary);
     return;
   }
 

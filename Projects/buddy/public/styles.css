@@ -296,7 +296,7 @@ textarea {
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   border-bottom: 2px solid var(--line);
   background: #ffffff;
 }
@@ -339,6 +339,110 @@ textarea {
   padding: 12px;
   white-space: pre-wrap;
   background: var(--bg);
+}
+
+.diary-book {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.diary-nav {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 0.8fr 0.8fr;
+  gap: 8px;
+}
+
+.diary-page {
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: inset 8px 0 0 #eeeeee;
+}
+
+.diary-page-head {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.diary-page-head span {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.diary-page-head p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.diary-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.diary-raw {
+  min-height: 190px;
+  margin-bottom: 8px;
+}
+
+.diary-summary {
+  min-height: 90px;
+  margin-bottom: 8px;
+}
+
+.diary-small {
+  min-height: 70px;
+  margin-top: 8px;
+}
+
+.linked-notes {
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 100px;
+}
+
+.linked-notes h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.linked-note,
+.linked-note-empty {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--text);
+  display: block;
+  margin-bottom: 8px;
+  padding: 10px;
+  text-align: left;
+}
+
+.linked-note:hover {
+  background: #000000;
+  color: #ffffff;
+}
+
+.linked-note strong,
+.linked-note span {
+  display: block;
+}
+
+.linked-note span,
+.linked-note-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .chat-message {

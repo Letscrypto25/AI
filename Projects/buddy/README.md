@@ -2,6 +2,8 @@
 
 Buddy is a black-and-white AI notebook for messy thoughts, WhatsApp notes, in-app notes, memory search, small code projects, and a guarded command terminal.
 
+The app includes a Diary tab where each day opens like a book page with the current date, a daily quote, raw diary writing, AI-organized summary/categories/thoughts/decisions/tasks, and notes linked by that date.
+
 ## Stack
 
 - Railway: hosting
@@ -35,7 +37,7 @@ Required for AI:
 - `GROQ_API_KEY`
 - `GROQ_MODEL`
 
-Required before enabling the command terminal:
+Required for the command terminal:
 
 - `BUDDY_ACCESS_TOKEN`
 - `BUDDY_ALLOW_TERMINAL=true`
@@ -46,8 +48,10 @@ Run `supabase/schema.sql` in the Supabase SQL editor.
 
 If Supabase is not configured, Buddy falls back to a local JSON file in `data/buddy.json`. That is useful for local testing but not reliable on Railway because Railway filesystems are ephemeral.
 
+Diary pages are stored in `buddy_diary_pages`; notes created on the same date are shown on that diary page and are included in Buddy chat memory.
+
 ## Terminal Safety
 
-The terminal is disabled unless `BUDDY_ALLOW_TERMINAL=true`.
+The terminal is on when `BUDDY_ALLOW_TERMINAL=true`.
 
 Commands run only inside Buddy's `workspace/` directory, and the server blocks broad destructive commands. This is still powerful, so keep `BUDDY_ACCESS_TOKEN` set before deploying.

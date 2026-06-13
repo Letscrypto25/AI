@@ -2,10 +2,13 @@ const state = {
   health: null,
   notes: [],
   projects: [],
+  diary: null,
+  diaryDate: new Date().toISOString().slice(0, 10),
+  diaryLinkedNotes: [],
   activeNoteId: null,
   activeProjectId: null,
   chat: [],
-  tab: 'chat',
+  tab: 'diary',
   token: localStorage.getItem('buddyToken') || ''
 };
 
@@ -28,6 +31,23 @@ const els = {
   tagsEditor: document.querySelector('#tagsEditor'),
   projectEditor: document.querySelector('#projectEditor'),
   tabButtons: document.querySelectorAll('.tab-button'),
+  diaryTab: document.querySelector('#diaryTab'),
+  diaryDateInput: document.querySelector('#diaryDateInput'),
+  diaryDisplayDate: document.querySelector('#diaryDisplayDate'),
+  diaryQuote: document.querySelector('#diaryQuote'),
+  diaryTitleInput: document.querySelector('#diaryTitleInput'),
+  diaryRawInput: document.querySelector('#diaryRawInput'),
+  diarySummaryInput: document.querySelector('#diarySummaryInput'),
+  diaryCategoriesInput: document.querySelector('#diaryCategoriesInput'),
+  diaryThoughtsInput: document.querySelector('#diaryThoughtsInput'),
+  diaryDecisionsInput: document.querySelector('#diaryDecisionsInput'),
+  diaryTasksInput: document.querySelector('#diaryTasksInput'),
+  diaryLinkedNotes: document.querySelector('#diaryLinkedNotes'),
+  previousDiaryButton: document.querySelector('#previousDiaryButton'),
+  todayDiaryButton: document.querySelector('#todayDiaryButton'),
+  nextDiaryButton: document.querySelector('#nextDiaryButton'),
+  saveDiaryButton: document.querySelector('#saveDiaryButton'),
+  organizeDiaryButton: document.querySelector('#organizeDiaryButton'),
   chatTab: document.querySelector('#chatTab'),
   projectsTab: document.querySelector('#projectsTab'),
   terminalTab: document.querySelector('#terminalTab'),
@@ -145,9 +165,50 @@ function renderTabs() {
   els.tabButtons.forEach((button) => {
     button.classList.toggle('active', button.dataset.tab === state.tab);
   });
+  els.diaryTab.classList.toggle('active', state.tab === 'diary');
   els.chatTab.classList.toggle('active', state.tab === 'chat');
   els.projectsTab.classList.toggle('active', state.tab === 'projects');
   els.terminalTab.classList.toggle('active', state.tab === 'terminal');
+}
+
+function formatDateLabel(dateString) {
+  const date = new Date(`${dateString}T12:00:00`);
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+function shiftDate(dateString, days) {
+  const date = new Date(`${dateString}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function renderDiary() {
+  const page = state.diary || {};
+  els.diaryDateInput.value = state.diaryDate;
+  els.diaryDisplayDate.textContent = formatDateLabel(state.diaryDate);
+  els.diaryQuote.textContent = page.quote ? `"${page.quote}"` : '';
+  els.diaryTitleInput.value = page.title || `Diary - ${state.diaryDate}`;
+  els.diaryRawInput.value = page.raw_text || '';
+  els.diarySummaryInput.value = page.ai_summary || '';
+  els.diaryCategoriesInput.value = (page.ai_categories || []).join(', ');
+  els.diaryThoughtsInput.value = (page.important_thoughts || []).join('\n');
+  els.diaryDecisionsInput.value = (page.decisions || []).join('\n');
+  els.diaryTasksInput.value = (page.tasks || []).join('\n');
+  if (!state.diaryLinkedNotes.length) {
+    els.diaryLinkedNotes.innerHTML = '<div class="linked-note-empty">No saved notes on this date yet.</div>';
+    return;
+  }
+  els.diaryLinkedNotes.innerHTML = state.diaryLinkedNotes.map((note) => `
+    <button class="linked-note" data-note-id="${escapeHtml(note.id)}">
+      <strong>${escapeHtml(note.clean_title || 'Untitled note')}</strong>
+      <span>${escapeHtml(note.category || 'Unsorted')}</span>
+    </button>
+  `).join('');
 }
 
 function renderProjects() {
@@ -186,6 +247,7 @@ function renderAll() {
   renderStatus();
   renderNotes();
   renderEditor();
+  renderDiary();
   renderChat();
   renderTabs();
   renderProjects();
@@ -211,8 +273,15 @@ async function loadProjects() {
   state.projects = data.projects || [];
 }
 
+async function loadDiary(date = state.diaryDate) {
+  state.diaryDate = date;
+  const data = await api(`/api/diary?date=${encodeURIComponent(state.diaryDate)}`);
+  state.diary = data.page || null;
+  state.diaryLinkedNotes = data.linked_notes || [];
+}
+
 async function reload() {
-  await Promise.all([loadHealth(), loadNotes(), loadProjects()]);
+  await Promise.all([loadHealth(), loadNotes(), loadProjects(), loadDiary()]);
   renderAll();
 }
 
@@ -306,6 +375,60 @@ async function sendChat() {
   }
 }
 
+async function saveDiary() {
+  const categories = els.diaryCategoriesInput.value.split(',').map((item) => item.trim()).filter(Boolean);
+  const importantThoughts = els.diaryThoughtsInput.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  const decisions = els.diaryDecisionsInput.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  const tasks = els.diaryTasksInput.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  setBusy(els.saveDiaryButton, true, 'Saving');
+  try {
+    const data = await api('/api/diary', {
+      method: 'PUT',
+      body: JSON.stringify({
+        diary_date: state.diaryDate,
+        title: els.diaryTitleInput.value,
+        quote: state.diary?.quote || '',
+        raw_text: els.diaryRawInput.value,
+        ai_summary: els.diarySummaryInput.value,
+        ai_categories: categories,
+        important_thoughts: importantThoughts,
+        decisions,
+        tasks
+      })
+    });
+    state.diary = data.page || null;
+    state.diaryLinkedNotes = data.linked_notes || [];
+    renderDiary();
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    setBusy(els.saveDiaryButton, false);
+  }
+}
+
+async function organizeDiary() {
+  await saveDiary();
+  setBusy(els.organizeDiaryButton, true, 'Organizing');
+  try {
+    const data = await api('/api/diary/organize', {
+      method: 'POST',
+      body: JSON.stringify({ diary_date: state.diaryDate })
+    });
+    state.diary = data.page || null;
+    state.diaryLinkedNotes = data.linked_notes || [];
+    renderDiary();
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    setBusy(els.organizeDiaryButton, false);
+  }
+}
+
+async function goDiary(date) {
+  await loadDiary(date);
+  renderDiary();
+}
+
 async function generateProject() {
   const idea = els.projectIdeaInput.value.trim();
   if (!idea) return;
@@ -374,6 +497,18 @@ els.tabButtons.forEach((button) => {
     state.tab = button.dataset.tab;
     renderTabs();
   });
+});
+els.diaryDateInput.addEventListener('change', () => goDiary(els.diaryDateInput.value));
+els.previousDiaryButton.addEventListener('click', () => goDiary(shiftDate(state.diaryDate, -1)));
+els.todayDiaryButton.addEventListener('click', () => goDiary(new Date().toISOString().slice(0, 10)));
+els.nextDiaryButton.addEventListener('click', () => goDiary(shiftDate(state.diaryDate, 1)));
+els.saveDiaryButton.addEventListener('click', saveDiary);
+els.organizeDiaryButton.addEventListener('click', organizeDiary);
+els.diaryLinkedNotes.addEventListener('click', (event) => {
+  const item = event.target.closest('[data-note-id]');
+  if (!item) return;
+  state.activeNoteId = item.dataset.noteId;
+  renderAll();
 });
 els.sendChatButton.addEventListener('click', sendChat);
 els.chatInput.addEventListener('keydown', (event) => {
