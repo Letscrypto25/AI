@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Buddy</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark">B</div>
+          <div>
+            <h1>Buddy</h1>
+            <p>Notebook, memory, projects, terminal.</p>
+          </div>
+        </div>
+        <div class="status-strip" id="statusStrip"></div>
+      </header>
+
+      <main class="workspace">
+        <aside class="pane inbox-pane">
+          <section class="section">
+            <div class="section-head">
+              <h2>Capture</h2>
+              <button id="saveNoteButton">Save</button>
+            </div>
+            <textarea id="captureText" class="capture-box" placeholder="Paste WhatsApp notes, rough thoughts, plans, or random ideas here."></textarea>
+            <div class="field-row">
+              <input id="sourceInput" type="text" placeholder="Source">
+              <input id="projectInput" type="text" placeholder="Project">
+            </div>
+            <select id="categoryInput">
+              <option value="">Auto category</option>
+              <option>WHATB</option>
+              <option>AI assistants</option>
+              <option>Apps to build</option>
+              <option>Business ideas</option>
+              <option>To-do items</option>
+              <option>Decisions</option>
+              <option>Random ideas</option>
+            </select>
+          </section>
+
+          <section class="section note-list-section">
+            <div class="section-head">
+              <h2>Memory</h2>
+              <button id="refreshButton">Refresh</button>
+            </div>
+            <input id="searchInput" type="search" placeholder="Search notes">
+            <div id="noteList" class="note-list"></div>
+          </section>
+        </aside>
+
+        <section class="pane editor-pane">
+          <div class="section-head editor-head">
+            <h2>Notepad</h2>
+            <div class="button-row">
+              <button id="updateNoteButton">Update</button>
+              <button id="deleteNoteButton" class="danger">Delete</button>
+            </div>
+          </div>
+          <input id="titleEditor" class="title-editor" type="text" placeholder="Select a note or start by saving one.">
+          <textarea id="rawEditor" class="raw-editor" placeholder="Raw note"></textarea>
+          <div class="editor-grid">
+            <label>
+              Summary
+              <textarea id="summaryEditor"></textarea>
+            </label>
+            <label>
+              Category
+              <input id="categoryEditor" type="text">
+            </label>
+            <label>
+              Tags
+              <input id="tagsEditor" type="text" placeholder="comma separated">
+            </label>
+            <label>
+              Project
+              <input id="projectEditor" type="text">
+            </label>
+          </div>
+        </section>
+
+        <aside class="pane assistant-pane">
+          <div class="tabs">
+            <button class="tab-button active" data-tab="chat">Chat</button>
+            <button class="tab-button" data-tab="projects">Projects</button>
+            <button class="tab-button" data-tab="terminal">Terminal</button>
+          </div>
+
+          <section id="chatTab" class="tab-panel active">
+            <div id="chatLog" class="chat-log"></div>
+            <div class="prompt-row">
+              <input id="chatInput" type="text" placeholder="Ask Buddy about saved notes">
+              <button id="sendChatButton">Ask</button>
+            </div>
+          </section>
+
+          <section id="projectsTab" class="tab-panel">
+            <textarea id="projectIdeaInput" class="project-idea" placeholder="Describe a small project Buddy should generate."></textarea>
+            <button id="generateProjectButton">Generate Project</button>
+            <div id="projectList" class="project-list"></div>
+            <pre id="projectFiles" class="file-preview"></pre>
+          </section>
+
+          <section id="terminalTab" class="tab-panel">
+            <input id="tokenInput" type="password" placeholder="Buddy access token">
+            <select id="terminalProjectSelect"></select>
+            <div class="prompt-row">
+              <input id="terminalInput" type="text" placeholder="npm install, git status, curl ...">
+              <button id="runCommandButton">Run</button>
+            </div>
+            <pre id="terminalOutput" class="terminal-output"></pre>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
