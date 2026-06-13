@@ -17,7 +17,11 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background: #eeeeee;
+  background:
+    linear-gradient(#f8f8f8 1px, transparent 1px),
+    linear-gradient(90deg, #f8f8f8 1px, transparent 1px),
+    #eeeeee;
+  background-size: 28px 28px;
   color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0;
@@ -85,12 +89,12 @@ textarea {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 12px;
-  gap: 12px;
+  padding: 18px;
+  gap: 16px;
 }
 
 .topbar {
-  min-height: 82px;
+  min-height: 92px;
   border: 2px solid var(--line);
   border-radius: 8px;
   background: #000000;
@@ -99,7 +103,7 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   box-shadow: 0 8px 24px var(--shadow);
 }
 
@@ -153,6 +157,47 @@ textarea {
   color: #000000;
 }
 
+.component-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.component-card {
+  min-height: 118px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.component-card span,
+.ml-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.component-card strong,
+.ml-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.component-card small,
+.ml-card p {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .status-pill {
   border: 1px solid #ffffff;
   border-radius: 999px;
@@ -165,14 +210,14 @@ textarea {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(260px, 0.85fr) minmax(360px, 1.35fr) minmax(300px, 0.95fr);
+  grid-template-columns: minmax(280px, 0.82fr) minmax(420px, 1.35fr) minmax(360px, 1fr);
   min-height: 0;
-  gap: 12px;
+  gap: 16px;
 }
 
 .pane {
   min-width: 0;
-  min-height: calc(100vh - 118px);
+  min-height: calc(100vh - 254px);
   border: 2px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
@@ -188,7 +233,7 @@ textarea {
 
 .section {
   border-bottom: 2px solid var(--line);
-  padding: 16px;
+  padding: 18px;
 }
 
 .section-head,
@@ -208,7 +253,7 @@ textarea {
 }
 
 .capture-box {
-  min-height: 176px;
+  min-height: 210px;
   font-size: 15px;
 }
 
@@ -235,11 +280,12 @@ textarea {
   overflow: auto;
   margin-top: 10px;
   border-top: 2px solid var(--line);
+  background: #fbfbfb;
 }
 
 .note-item {
   border-bottom: 1px solid var(--line);
-  padding: 12px 10px;
+  padding: 14px 12px;
   cursor: pointer;
   transition: background 140ms ease, padding-left 140ms ease;
 }
@@ -274,8 +320,8 @@ textarea {
 }
 
 .editor-pane {
-  padding: 16px;
-  gap: 12px;
+  padding: 18px;
+  gap: 14px;
 }
 
 .title-editor {
@@ -285,7 +331,7 @@ textarea {
 }
 
 .raw-editor {
-  min-height: 320px;
+  min-height: 380px;
   flex: 1;
   font-size: 16px;
 }
@@ -310,7 +356,7 @@ textarea {
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-bottom: 2px solid var(--line);
   background: #ffffff;
 }
@@ -321,7 +367,8 @@ textarea {
   background: var(--bg);
   color: var(--text);
   border-radius: 0;
-  min-height: 44px;
+  min-height: 52px;
+  font-weight: 700;
 }
 
 .tab-button:last-child {
@@ -335,7 +382,7 @@ textarea {
 
 .tab-panel {
   display: none;
-  padding: 16px;
+  padding: 18px;
   min-height: 0;
   flex: 1;
 }
@@ -358,7 +405,7 @@ textarea {
 .diary-book {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-height: 0;
 }
 
@@ -372,8 +419,8 @@ textarea {
   border: 2px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
-  padding: 14px;
-  box-shadow: inset 8px 0 0 #eeeeee;
+  padding: 18px;
+  box-shadow: inset 10px 0 0 #eeeeee;
 }
 
 .diary-page-head {
@@ -402,7 +449,7 @@ textarea {
 }
 
 .diary-raw {
-  min-height: 190px;
+  min-height: 220px;
   margin-bottom: 8px;
 }
 
@@ -421,6 +468,64 @@ textarea {
   border-radius: 8px;
   padding: 12px;
   min-height: 100px;
+  background: #fbfbfb;
+}
+
+.ml-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.ml-card,
+.ml-section {
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.ml-section {
+  margin-top: 12px;
+}
+
+.ml-section h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.signal-list {
+  display: grid;
+  gap: 8px;
+}
+
+.signal-row,
+.signal-action,
+.signal-empty {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbfbfb;
+  padding: 10px;
+}
+
+.signal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.signal-row span,
+.signal-action span,
+.signal-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.signal-action strong {
+  display: block;
+  margin-bottom: 4px;
 }
 
 .linked-notes h3 {
@@ -475,7 +580,7 @@ textarea {
 }
 
 .project-idea {
-  min-height: 140px;
+  min-height: 180px;
   margin-bottom: 10px;
 }
 
@@ -524,6 +629,10 @@ textarea {
 }
 
 @media (max-width: 1040px) {
+  .component-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .workspace {
     grid-template-columns: 1fr;
   }
@@ -539,6 +648,10 @@ textarea {
 }
 
 @media (max-width: 680px) {
+  .app-shell {
+    padding: 10px;
+  }
+
   .topbar {
     align-items: flex-start;
     flex-direction: column;
@@ -562,6 +675,12 @@ textarea {
   .prompt-row,
   .editor-grid {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .component-strip,
+  .diary-nav,
+  .tabs {
     grid-template-columns: 1fr;
   }
 }

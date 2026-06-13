@@ -16,6 +16,11 @@ const state = {
 const els = {
   statusStrip: document.querySelector('#statusStrip'),
   installAppButton: document.querySelector('#installAppButton'),
+  componentDiary: document.querySelector('#componentDiary'),
+  componentNotes: document.querySelector('#componentNotes'),
+  componentMl: document.querySelector('#componentMl'),
+  componentProjects: document.querySelector('#componentProjects'),
+  componentTerminal: document.querySelector('#componentTerminal'),
   saveNoteButton: document.querySelector('#saveNoteButton'),
   refreshButton: document.querySelector('#refreshButton'),
   captureText: document.querySelector('#captureText'),
@@ -51,6 +56,16 @@ const els = {
   saveDiaryButton: document.querySelector('#saveDiaryButton'),
   organizeDiaryButton: document.querySelector('#organizeDiaryButton'),
   chatTab: document.querySelector('#chatTab'),
+  mlTab: document.querySelector('#mlTab'),
+  mlMemoryScore: document.querySelector('#mlMemoryScore'),
+  mlMemorySummary: document.querySelector('#mlMemorySummary'),
+  mlTopCategory: document.querySelector('#mlTopCategory'),
+  mlCategorySummary: document.querySelector('#mlCategorySummary'),
+  mlProjectFocus: document.querySelector('#mlProjectFocus'),
+  mlProjectSummary: document.querySelector('#mlProjectSummary'),
+  mlCategoryList: document.querySelector('#mlCategoryList'),
+  mlThemeList: document.querySelector('#mlThemeList'),
+  mlActionList: document.querySelector('#mlActionList'),
   projectsTab: document.querySelector('#projectsTab'),
   terminalTab: document.querySelector('#terminalTab'),
   chatLog: document.querySelector('#chatLog'),
@@ -116,6 +131,72 @@ function renderStatus() {
   els.statusStrip.innerHTML = pills.map((pill) => `<span class="status-pill">${escapeHtml(pill)}</span>`).join('');
 }
 
+function plural(count, label) {
+  return `${count} ${label}${count === 1 ? '' : 's'}`;
+}
+
+function countBy(items, getter) {
+  return items.reduce((counts, item) => {
+    const key = getter(item);
+    if (!key) return counts;
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function sortedEntries(counts) {
+  return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
+function renderSignalList(element, entries, emptyText) {
+  if (!entries.length) {
+    element.innerHTML = `<div class="signal-empty">${escapeHtml(emptyText)}</div>`;
+    return;
+  }
+  element.innerHTML = entries.map(([label, count]) => `
+    <div class="signal-row">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(count)}</strong>
+    </div>
+  `).join('');
+}
+
+function noteWords(note) {
+  return [
+    note.raw_text,
+    note.clean_title,
+    note.summary,
+    note.category,
+    note.project,
+    ...(note.tags || [])
+  ].join(' ').toLowerCase().match(/[a-z0-9]{4,}/g) || [];
+}
+
+function mlSnapshot() {
+  const categoryEntries = sortedEntries(countBy(state.notes, (note) => note.category || 'Unsorted'));
+  const projectEntries = sortedEntries(countBy(state.notes, (note) => note.project || 'No project'));
+  const stopWords = new Set(['this', 'that', 'with', 'from', 'have', 'will', 'your', 'buddy', 'note', 'notes', 'diary', 'page']);
+  const themeCounts = {};
+  for (const note of state.notes) {
+    for (const word of noteWords(note)) {
+      if (stopWords.has(word)) continue;
+      themeCounts[word] = (themeCounts[word] || 0) + 1;
+    }
+  }
+  const themeEntries = sortedEntries(themeCounts).filter(([, count]) => count > 1).slice(0, 8);
+  return { categoryEntries, projectEntries, themeEntries };
+}
+
+function renderComponents() {
+  const health = state.health || {};
+  const categories = new Set(state.notes.map((note) => note.category).filter(Boolean));
+  els.componentDiary.textContent = state.diary?.raw_text ? 'Saved today' : 'Today page';
+  els.componentNotes.textContent = plural(state.notes.length, 'note');
+  els.componentMl.textContent = `${categories.size} categories`;
+  els.componentProjects.textContent = plural(state.projects.length, 'project');
+  els.componentTerminal.textContent = health.terminal ? 'Terminal on' : 'Terminal off';
+}
+
 function renderNotes() {
   const active = state.activeNoteId;
   if (!state.notes.length) {
@@ -169,6 +250,7 @@ function renderTabs() {
   });
   els.diaryTab.classList.toggle('active', state.tab === 'diary');
   els.chatTab.classList.toggle('active', state.tab === 'chat');
+  els.mlTab.classList.toggle('active', state.tab === 'ml');
   els.projectsTab.classList.toggle('active', state.tab === 'projects');
   els.terminalTab.classList.toggle('active', state.tab === 'terminal');
 }
@@ -234,6 +316,38 @@ function renderProjects() {
   renderProjectFiles(project);
 }
 
+function renderML() {
+  const { categoryEntries, projectEntries, themeEntries } = mlSnapshot();
+  const signalCount = state.notes.length + (state.diary?.raw_text ? 1 : 0) + state.projects.length;
+  const topCategory = categoryEntries[0];
+  const topProject = projectEntries.find(([name]) => name !== 'No project') || projectEntries[0];
+  els.mlMemoryScore.textContent = plural(signalCount, 'signal');
+  els.mlMemorySummary.textContent = signalCount
+    ? 'Buddy is using notes, diary pages, projects, and repeated tags as learning signals.'
+    : 'Add notes and diary pages so Buddy can learn your patterns.';
+  els.mlTopCategory.textContent = topCategory ? topCategory[0] : 'None yet';
+  els.mlCategorySummary.textContent = topCategory
+    ? `${topCategory[0]} is the strongest current bucket with ${plural(topCategory[1], 'note')}.`
+    : 'Categories will appear as notes are saved.';
+  els.mlProjectFocus.textContent = topProject ? topProject[0] : 'No project';
+  els.mlProjectSummary.textContent = topProject
+    ? `Most visible project signal: ${topProject[0]}.`
+    : 'Buddy watches which projects keep showing up.';
+  renderSignalList(els.mlCategoryList, categoryEntries.slice(0, 8), 'No category signals yet.');
+  renderSignalList(els.mlThemeList, themeEntries, 'No repeated themes yet.');
+  const actions = [
+    state.diary?.raw_text ? ['Organize today', 'Diary has raw writing ready for AI cleanup.'] : ['Write today', 'Add a diary page for today.'],
+    state.notes.length ? ['Review memory', `${plural(state.notes.length, 'note')} ready for categorising.`] : ['Capture first note', 'Paste a thought into Capture.'],
+    state.projects.length ? ['Open projects', `${plural(state.projects.length, 'project')} saved.`] : ['Generate project', 'Turn a strong note into a small app.']
+  ];
+  els.mlActionList.innerHTML = actions.map(([title, body]) => `
+    <div class="signal-action">
+      <strong>${escapeHtml(title)}</strong>
+      <span>${escapeHtml(body)}</span>
+    </div>
+  `).join('');
+}
+
 function renderProjectFiles(project) {
   if (!project) {
     els.projectFiles.textContent = '';
@@ -247,10 +361,12 @@ function renderProjectFiles(project) {
 
 function renderAll() {
   renderStatus();
+  renderComponents();
   renderNotes();
   renderEditor();
   renderDiary();
   renderChat();
+  renderML();
   renderTabs();
   renderProjects();
 }

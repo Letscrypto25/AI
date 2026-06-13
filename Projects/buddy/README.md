@@ -1,8 +1,10 @@
 # Buddy
 
-Buddy is a black-and-white AI notebook for messy thoughts, WhatsApp notes, in-app notes, memory search, small code projects, and a guarded command terminal.
+Buddy is a black-and-white AI notebook for messy thoughts, WhatsApp notes, in-app notes, ML memory signals, small code projects, and a guarded command terminal.
 
 The app includes a Diary tab where each day opens like a book page with the current date, a daily quote, raw diary writing, AI-organized summary/categories/thoughts/decisions/tasks, and notes linked by that date.
+
+Main components are surfaced as dashboard cards: Diary, Notes, ML, Projects, and Terminal. The ML tab summarizes category signals, repeated themes, project focus, and suggested next actions from saved memory.
 
 Buddy is wrapped as a PWA. When it is served from Railway over HTTPS, supported browsers can install it from the in-app `Install` button or the browser install menu.
 

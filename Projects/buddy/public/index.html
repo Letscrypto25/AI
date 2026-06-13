@@ -15,7 +15,7 @@
           <div class="brand-mark">B</div>
           <div>
             <h1>Buddy</h1>
-            <p>Notebook, memory, projects, terminal.</p>
+            <p>Diary, memory, ML, projects, terminal.</p>
           </div>
         </div>
         <div class="topbar-actions">
@@ -23,6 +23,34 @@
           <div class="status-strip" id="statusStrip"></div>
         </div>
       </header>
+
+      <section class="component-strip" aria-label="Buddy components">
+        <div class="component-card">
+          <span>Diary</span>
+          <strong id="componentDiary">Today page</strong>
+          <small>Daily quote, book paging, linked notes</small>
+        </div>
+        <div class="component-card">
+          <span>Notes</span>
+          <strong id="componentNotes">0 notes</strong>
+          <small>Capture inbox and editable memory</small>
+        </div>
+        <div class="component-card">
+          <span>ML</span>
+          <strong id="componentMl">Learning idle</strong>
+          <small>Categories, signals, trends, next actions</small>
+        </div>
+        <div class="component-card">
+          <span>Projects</span>
+          <strong id="componentProjects">0 projects</strong>
+          <small>Generated apps and workspace files</small>
+        </div>
+        <div class="component-card">
+          <span>Terminal</span>
+          <strong id="componentTerminal">Checking</strong>
+          <small>Command runner with controlled scope</small>
+        </div>
+      </section>
 
       <main class="workspace">
         <aside class="pane inbox-pane">
@@ -92,6 +120,7 @@
           <div class="tabs">
             <button class="tab-button active" data-tab="diary">Diary</button>
             <button class="tab-button" data-tab="chat">Chat</button>
+            <button class="tab-button" data-tab="ml">ML</button>
             <button class="tab-button" data-tab="projects">Projects</button>
             <button class="tab-button" data-tab="terminal">Terminal</button>
           </div>
@@ -133,6 +162,38 @@
             <div class="prompt-row">
               <input id="chatInput" type="text" placeholder="Ask Buddy about saved notes and diary pages">
               <button id="sendChatButton">Ask</button>
+            </div>
+          </section>
+
+          <section id="mlTab" class="tab-panel">
+            <div class="ml-grid">
+              <div class="ml-card">
+                <span>Memory Model</span>
+                <strong id="mlMemoryScore">0 signals</strong>
+                <p id="mlMemorySummary">Add notes and diary pages so Buddy can learn your patterns.</p>
+              </div>
+              <div class="ml-card">
+                <span>Top Category</span>
+                <strong id="mlTopCategory">None yet</strong>
+                <p id="mlCategorySummary">Categories will appear as notes are saved.</p>
+              </div>
+              <div class="ml-card">
+                <span>Project Focus</span>
+                <strong id="mlProjectFocus">No project</strong>
+                <p id="mlProjectSummary">Buddy watches which projects keep showing up.</p>
+              </div>
+            </div>
+            <div class="ml-section">
+              <h3>Category Signals</h3>
+              <div id="mlCategoryList" class="signal-list"></div>
+            </div>
+            <div class="ml-section">
+              <h3>Repeated Themes</h3>
+              <div id="mlThemeList" class="signal-list"></div>
+            </div>
+            <div class="ml-section">
+              <h3>Suggested Next Actions</h3>
+              <div id="mlActionList" class="signal-list"></div>
             </div>
           </section>
 
