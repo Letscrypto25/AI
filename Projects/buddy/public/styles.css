@@ -139,6 +139,20 @@ textarea {
   gap: 8px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.install-button {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #000000;
+}
+
 .status-pill {
   border: 1px solid #ffffff;
   border-radius: 999px;
@@ -536,6 +550,10 @@ textarea {
   }
 
   .status-strip {
+    justify-content: flex-start;
+  }
+
+  .topbar-actions {
     justify-content: flex-start;
   }
 

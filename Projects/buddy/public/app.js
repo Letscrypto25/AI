@@ -9,11 +9,13 @@ const state = {
   activeProjectId: null,
   chat: [],
   tab: 'diary',
-  token: localStorage.getItem('buddyToken') || ''
+  token: localStorage.getItem('buddyToken') || '',
+  installPrompt: null
 };
 
 const els = {
   statusStrip: document.querySelector('#statusStrip'),
+  installAppButton: document.querySelector('#installAppButton'),
   saveNoteButton: document.querySelector('#saveNoteButton'),
   refreshButton: document.querySelector('#refreshButton'),
   captureText: document.querySelector('#captureText'),
@@ -534,6 +536,27 @@ els.terminalProjectSelect.addEventListener('change', () => {
 els.runCommandButton.addEventListener('click', runCommand);
 els.terminalInput.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') runCommand();
+});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  });
+}
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  state.installPrompt = event;
+  els.installAppButton.hidden = false;
+});
+els.installAppButton.addEventListener('click', async () => {
+  if (!state.installPrompt) return;
+  const promptEvent = state.installPrompt;
+  state.installPrompt = null;
+  els.installAppButton.hidden = true;
+  await promptEvent.prompt();
+});
+window.addEventListener('appinstalled', () => {
+  state.installPrompt = null;
+  els.installAppButton.hidden = true;
 });
 
 reload().catch((error) => {

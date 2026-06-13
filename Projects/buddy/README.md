@@ -4,6 +4,8 @@ Buddy is a black-and-white AI notebook for messy thoughts, WhatsApp notes, in-ap
 
 The app includes a Diary tab where each day opens like a book page with the current date, a daily quote, raw diary writing, AI-organized summary/categories/thoughts/decisions/tasks, and notes linked by that date.
 
+Buddy is wrapped as a PWA. When it is served from Railway over HTTPS, supported browsers can install it from the in-app `Install` button or the browser install menu.
+
 ## Stack
 
 - Railway: hosting
