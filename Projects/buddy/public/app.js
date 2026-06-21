@@ -38,6 +38,8 @@ const els = {
   tagsEditor: document.querySelector('#tagsEditor'),
   projectEditor: document.querySelector('#projectEditor'),
   tabButtons: document.querySelectorAll('.tab-button'),
+  componentCards: document.querySelectorAll('.component-card'),
+  flowSteps: document.querySelectorAll('.flow-step'),
   diaryTab: document.querySelector('#diaryTab'),
   diaryDateInput: document.querySelector('#diaryDateInput'),
   diaryDisplayDate: document.querySelector('#diaryDisplayDate'),
@@ -195,6 +197,10 @@ function renderComponents() {
   els.componentMl.textContent = `${categories.size} categories`;
   els.componentProjects.textContent = plural(state.projects.length, 'project');
   els.componentTerminal.textContent = health.terminal ? 'Terminal on' : 'Terminal off';
+  els.componentCards.forEach((card) => {
+    const tab = card.dataset.tab;
+    card.classList.toggle('active', tab ? tab === state.tab : false);
+  });
 }
 
 function renderNotes() {
@@ -232,16 +238,40 @@ function renderEditor() {
 
 function renderChat() {
   if (!state.chat.length) {
-    els.chatLog.innerHTML = '<div class="chat-message"><b>Buddy</b>Ask me about your saved notes, decisions, projects, or repeated ideas.</div>';
+    els.chatLog.innerHTML = '<div class="chat-message assistant"><b>Buddy</b>Ask me about your saved notes, decisions, projects, or repeated ideas.</div>';
     return;
   }
-  els.chatLog.innerHTML = state.chat.map((message) => `
-    <div class="chat-message">
-      <b>${escapeHtml(message.role)}</b>
-      ${escapeHtml(message.text)}
-    </div>
-  `).join('');
+  els.chatLog.innerHTML = state.chat.map((message) => {
+    const roleClass = message.role === 'You' ? 'user' : 'assistant';
+    return `
+      <div class="chat-message ${roleClass}">
+        <b>${escapeHtml(message.role)}</b>
+        ${escapeHtml(message.text)}
+      </div>
+    `;
+  }).join('');
   els.chatLog.scrollTop = els.chatLog.scrollHeight;
+}
+
+function setTab(tab) {
+  state.tab = tab;
+  renderTabs();
+  renderComponents();
+  updateFlowSteps('assistant');
+}
+
+function updateFlowSteps(activeFlow) {
+  els.flowSteps.forEach((step) => {
+    step.classList.toggle('active', step.dataset.flow === activeFlow);
+  });
+}
+
+function focusFlowPane(flow) {
+  updateFlowSteps(flow);
+  const pane = document.querySelector(`[data-flow-pane="${flow}"]`);
+  if (pane) {
+    pane.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 function renderTabs() {
@@ -305,12 +335,15 @@ function renderProjects() {
     els.projectFiles.textContent = '';
     return;
   }
-  els.projectList.innerHTML = state.projects.map((project) => `
-    <div class="project-item" data-project-id="${escapeHtml(project.id)}">
+  els.projectList.innerHTML = state.projects.map((project) => {
+    const activeClass = project.id === state.activeProjectId ? 'project-item active' : 'project-item';
+    return `
+    <div class="${activeClass}" data-project-id="${escapeHtml(project.id)}">
       <strong>${escapeHtml(project.name)}</strong>
       <span>${escapeHtml(project.summary || project.idea || '')}</span>
     </div>
-  `).join('');
+  `;
+  }).join('');
   const project = state.projects.find((item) => item.id === state.activeProjectId) || state.projects[0];
   if (project && !state.activeProjectId) state.activeProjectId = project.id;
   renderProjectFiles(project);
@@ -336,15 +369,21 @@ function renderML() {
   renderSignalList(els.mlCategoryList, categoryEntries.slice(0, 8), 'No category signals yet.');
   renderSignalList(els.mlThemeList, themeEntries, 'No repeated themes yet.');
   const actions = [
-    state.diary?.raw_text ? ['Organize today', 'Diary has raw writing ready for AI cleanup.'] : ['Write today', 'Add a diary page for today.'],
-    state.notes.length ? ['Review memory', `${plural(state.notes.length, 'note')} ready for categorising.`] : ['Capture first note', 'Paste a thought into Capture.'],
-    state.projects.length ? ['Open projects', `${plural(state.projects.length, 'project')} saved.`] : ['Generate project', 'Turn a strong note into a small app.']
+    state.diary?.raw_text
+      ? ['Organize today', 'Diary has raw writing ready for AI cleanup.', 'diary']
+      : ['Write today', 'Add a diary page for today.', 'diary'],
+    state.notes.length
+      ? ['Review memory', `${plural(state.notes.length, 'note')} ready for categorising.`, 'capture']
+      : ['Capture first note', 'Paste a thought into Capture.', 'capture'],
+    state.projects.length
+      ? ['Open projects', `${plural(state.projects.length, 'project')} saved.`, 'projects']
+      : ['Generate project', 'Turn a strong note into a small app.', 'projects']
   ];
-  els.mlActionList.innerHTML = actions.map(([title, body]) => `
-    <div class="signal-action">
+  els.mlActionList.innerHTML = actions.map(([title, body, actionTab]) => `
+    <button type="button" class="signal-action" data-action-tab="${escapeHtml(actionTab || '')}">
       <strong>${escapeHtml(title)}</strong>
       <span>${escapeHtml(body)}</span>
-    </div>
+    </button>
   `).join('');
 }
 
@@ -475,6 +514,7 @@ async function deleteNote() {
 async function sendChat() {
   const message = els.chatInput.value.trim();
   if (!message) return;
+  setTab('chat');
   state.chat.push({ role: 'You', text: message });
   els.chatInput.value = '';
   renderChat();
@@ -593,6 +633,9 @@ async function runCommand() {
   }
 }
 
+els.captureText.addEventListener('focus', () => updateFlowSteps('capture'));
+els.titleEditor.addEventListener('focus', () => updateFlowSteps('edit'));
+els.rawEditor.addEventListener('focus', () => updateFlowSteps('edit'));
 els.saveNoteButton.addEventListener('click', saveNote);
 els.refreshButton.addEventListener('click', reload);
 els.searchInput.addEventListener('input', () => {
@@ -606,15 +649,38 @@ els.noteList.addEventListener('click', (event) => {
   const item = event.target.closest('[data-note-id]');
   if (!item) return;
   state.activeNoteId = item.dataset.noteId;
+  updateFlowSteps('edit');
   renderAll();
 });
 els.updateNoteButton.addEventListener('click', updateNote);
 els.deleteNoteButton.addEventListener('click', deleteNote);
 els.tabButtons.forEach((button) => {
-  button.addEventListener('click', () => {
-    state.tab = button.dataset.tab;
-    renderTabs();
+  button.addEventListener('click', () => setTab(button.dataset.tab));
+});
+els.componentCards.forEach((card) => {
+  card.addEventListener('click', () => {
+    if (card.dataset.tab) {
+      setTab(card.dataset.tab);
+      return;
+    }
+    if (card.dataset.flow) {
+      focusFlowPane(card.dataset.flow);
+    }
   });
+});
+els.mlActionList.addEventListener('click', (event) => {
+  const action = event.target.closest('[data-action-tab]');
+  if (!action) return;
+  const tab = action.dataset.actionTab;
+  if (tab === 'capture') {
+    focusFlowPane('capture');
+    els.captureText.focus();
+    return;
+  }
+  if (tab) setTab(tab);
+});
+els.flowSteps.forEach((step) => {
+  step.addEventListener('click', () => focusFlowPane(step.dataset.flow));
 });
 els.diaryDateInput.addEventListener('change', () => goDiary(els.diaryDateInput.value));
 els.previousDiaryButton.addEventListener('click', () => goDiary(shiftDate(state.diaryDate, -1)));
@@ -678,3 +744,4 @@ window.addEventListener('appinstalled', () => {
 reload().catch((error) => {
   els.statusStrip.innerHTML = `<span class="status-pill">${escapeHtml(error.message)}</span>`;
 });
+updateFlowSteps('capture');

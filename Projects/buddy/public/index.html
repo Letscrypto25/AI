@@ -3,98 +3,129 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Buddy</title>
+    <title>Call Buddy</title>
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
         <div class="brand-block">
-          <div class="brand-mark">B</div>
+          <div class="brand-mark" aria-hidden="true">CB</div>
           <div>
-            <h1>Buddy</h1>
-            <p>Diary, memory, ML, projects, terminal.</p>
+            <p class="brand-eyebrow">Private memory desk</p>
+            <h1>Call Buddy</h1>
+            <p class="brand-tagline">Dump thoughts fast. Find them later.</p>
           </div>
         </div>
+        <nav class="flow-rail" aria-label="Working flow">
+          <button type="button" class="flow-step active" data-flow="capture">1 · Capture</button>
+          <span class="flow-arrow" aria-hidden="true">→</span>
+          <button type="button" class="flow-step" data-flow="edit">2 · Notepad</button>
+          <span class="flow-arrow" aria-hidden="true">→</span>
+          <button type="button" class="flow-step" data-flow="assistant">3 · Buddy</button>
+        </nav>
         <div class="topbar-actions">
-          <button id="installAppButton" class="install-button" hidden>Install</button>
+          <button id="installAppButton" class="button-secondary install-button" hidden>Install app</button>
           <div class="status-strip" id="statusStrip"></div>
         </div>
       </header>
 
-      <section class="component-strip" aria-label="Buddy components">
-        <div class="component-card">
+      <section class="component-strip" aria-label="Buddy modules">
+        <button type="button" class="component-card" data-tab="diary">
           <span>Diary</span>
           <strong id="componentDiary">Today page</strong>
           <small>Daily quote, book paging, linked notes</small>
-        </div>
-        <div class="component-card">
+        </button>
+        <button type="button" class="component-card" data-flow="capture">
           <span>Notes</span>
           <strong id="componentNotes">0 notes</strong>
           <small>Capture inbox and editable memory</small>
-        </div>
-        <div class="component-card">
+        </button>
+        <button type="button" class="component-card" data-tab="ml">
           <span>ML</span>
           <strong id="componentMl">Learning idle</strong>
           <small>Categories, signals, trends, next actions</small>
-        </div>
-        <div class="component-card">
+        </button>
+        <button type="button" class="component-card" data-tab="projects">
           <span>Projects</span>
           <strong id="componentProjects">0 projects</strong>
           <small>Generated apps and workspace files</small>
-        </div>
-        <div class="component-card">
+        </button>
+        <button type="button" class="component-card" data-tab="terminal">
           <span>Terminal</span>
           <strong id="componentTerminal">Checking</strong>
           <small>Command runner with controlled scope</small>
-        </div>
+        </button>
       </section>
 
       <main class="workspace">
-        <aside class="pane inbox-pane">
-          <section class="section">
+        <aside class="pane inbox-pane" data-flow-pane="capture">
+          <div class="pane-label">Capture</div>
+          <section class="section capture-section">
             <div class="section-head">
-              <h2>Capture</h2>
-              <button id="saveNoteButton">Save</button>
+              <div>
+                <h2>Quick inbox</h2>
+                <p class="section-hint">Paste anything — WhatsApp, voice text, half-ideas.</p>
+              </div>
+              <button id="saveNoteButton" class="button-primary">Save note</button>
             </div>
-            <textarea id="captureText" class="capture-box" placeholder="Paste WhatsApp notes, rough thoughts, plans, or random ideas here."></textarea>
+            <textarea id="captureText" class="capture-box" placeholder="Drop a messy thought here. Structure comes later."></textarea>
             <div class="field-row">
-              <input id="sourceInput" type="text" placeholder="Source">
-              <input id="projectInput" type="text" placeholder="Project">
+              <label class="field">
+                <span class="field-label">Source</span>
+                <input id="sourceInput" type="text" placeholder="WhatsApp, voice, app…">
+              </label>
+              <label class="field">
+                <span class="field-label">Project</span>
+                <input id="projectInput" type="text" placeholder="WHATB, fan-tan…">
+              </label>
             </div>
-            <select id="categoryInput">
-              <option value="">Auto category</option>
-              <option>WHATB</option>
-              <option>AI assistants</option>
-              <option>Apps to build</option>
-              <option>Business ideas</option>
-              <option>To-do items</option>
-              <option>Decisions</option>
-              <option>Random ideas</option>
-            </select>
+            <label class="field">
+              <span class="field-label">Category</span>
+              <select id="categoryInput">
+                <option value="">Auto category</option>
+                <option>WHATB</option>
+                <option>AI assistants</option>
+                <option>Apps to build</option>
+                <option>Business ideas</option>
+                <option>To-do items</option>
+                <option>Decisions</option>
+                <option>Random ideas</option>
+              </select>
+            </label>
           </section>
 
           <section class="section note-list-section">
             <div class="section-head">
-              <h2>Memory</h2>
-              <button id="refreshButton">Refresh</button>
+              <div>
+                <h2>Memory</h2>
+                <p class="section-hint">Search and open saved notes.</p>
+              </div>
+              <button id="refreshButton" class="button-ghost">Refresh</button>
             </div>
-            <input id="searchInput" type="search" placeholder="Search notes">
+            <input id="searchInput" type="search" placeholder="Search notes…">
             <div id="noteList" class="note-list"></div>
           </section>
         </aside>
 
-        <section class="pane editor-pane">
+        <section class="pane editor-pane" data-flow-pane="edit">
+          <div class="pane-label">Notepad</div>
           <div class="section-head editor-head">
-            <h2>Notepad</h2>
+            <div>
+              <h2>Active note</h2>
+              <p class="section-hint">Edit raw text, summary, tags, and project link.</p>
+            </div>
             <div class="button-row">
-              <button id="updateNoteButton">Update</button>
-              <button id="deleteNoteButton" class="danger">Delete</button>
+              <button id="updateNoteButton" class="button-primary">Update</button>
+              <button id="deleteNoteButton" class="button-danger">Delete</button>
             </div>
           </div>
-          <input id="titleEditor" class="title-editor" type="text" placeholder="Select a note or start by saving one.">
+          <input id="titleEditor" class="title-editor" type="text" placeholder="Select a note or save one from Capture.">
           <textarea id="rawEditor" class="raw-editor" placeholder="Raw note"></textarea>
           <div class="editor-grid">
             <label>
@@ -116,42 +147,46 @@
           </div>
         </section>
 
-        <aside class="pane assistant-pane">
-          <div class="tabs">
-            <button class="tab-button active" data-tab="diary">Diary</button>
-            <button class="tab-button" data-tab="chat">Chat</button>
-            <button class="tab-button" data-tab="ml">ML</button>
-            <button class="tab-button" data-tab="projects">Projects</button>
-            <button class="tab-button" data-tab="terminal">Terminal</button>
+        <aside class="pane assistant-pane" data-flow-pane="assistant">
+          <div class="pane-label">Buddy</div>
+          <div class="tabs" role="tablist" aria-label="Buddy panels">
+            <button class="tab-button active" data-tab="diary" role="tab">Diary</button>
+            <button class="tab-button" data-tab="chat" role="tab">Chat</button>
+            <button class="tab-button" data-tab="ml" role="tab">ML</button>
+            <button class="tab-button" data-tab="projects" role="tab">Projects</button>
+            <button class="tab-button" data-tab="terminal" role="tab">Terminal</button>
           </div>
 
           <section id="diaryTab" class="tab-panel active">
             <div class="diary-book">
               <div class="diary-nav">
-                <button id="previousDiaryButton" title="Previous day">Prev</button>
+                <button id="previousDiaryButton" class="button-ghost" title="Previous day">← Prev</button>
                 <input id="diaryDateInput" type="date">
-                <button id="todayDiaryButton">Today</button>
-                <button id="nextDiaryButton" title="Next day">Next</button>
+                <button id="todayDiaryButton" class="button-secondary">Today</button>
+                <button id="nextDiaryButton" class="button-ghost" title="Next day">Next →</button>
               </div>
               <div class="diary-page">
                 <div class="diary-page-head">
                   <span id="diaryDisplayDate"></span>
-                  <p id="diaryQuote"></p>
+                  <p id="diaryQuote" class="diary-quote"></p>
                 </div>
                 <input id="diaryTitleInput" class="diary-title" type="text" placeholder="Diary title">
-                <textarea id="diaryRawInput" class="diary-raw" placeholder="Write today's page here. Buddy will keep it linked to this date."></textarea>
-                <textarea id="diarySummaryInput" class="diary-summary" placeholder="AI summary or cleaned version"></textarea>
-                <input id="diaryCategoriesInput" type="text" placeholder="Categories, comma separated">
-                <textarea id="diaryThoughtsInput" class="diary-small" placeholder="Important thoughts, one per line"></textarea>
-                <textarea id="diaryDecisionsInput" class="diary-small" placeholder="Decisions, one per line"></textarea>
-                <textarea id="diaryTasksInput" class="diary-small" placeholder="Tasks, one per line"></textarea>
+                <textarea id="diaryRawInput" class="diary-raw" placeholder="Write today's page. Buddy keeps it linked to this date."></textarea>
+                <details class="diary-details">
+                  <summary>AI fields &amp; structure</summary>
+                  <textarea id="diarySummaryInput" class="diary-summary" placeholder="AI summary or cleaned version"></textarea>
+                  <input id="diaryCategoriesInput" type="text" placeholder="Categories, comma separated">
+                  <textarea id="diaryThoughtsInput" class="diary-small" placeholder="Important thoughts, one per line"></textarea>
+                  <textarea id="diaryDecisionsInput" class="diary-small" placeholder="Decisions, one per line"></textarea>
+                  <textarea id="diaryTasksInput" class="diary-small" placeholder="Tasks, one per line"></textarea>
+                </details>
                 <div class="button-row">
-                  <button id="saveDiaryButton">Save Diary Page</button>
-                  <button id="organizeDiaryButton">Organize With AI</button>
+                  <button id="saveDiaryButton" class="button-primary">Save page</button>
+                  <button id="organizeDiaryButton" class="button-secondary">Organize with AI</button>
                 </div>
               </div>
               <div class="linked-notes">
-                <h3>Notes On This Date</h3>
+                <h3>Notes on this date</h3>
                 <div id="diaryLinkedNotes"></div>
               </div>
             </div>
@@ -159,57 +194,63 @@
 
           <section id="chatTab" class="tab-panel">
             <div id="chatLog" class="chat-log"></div>
-            <div class="prompt-row">
-              <input id="chatInput" type="text" placeholder="Ask Buddy about saved notes and diary pages">
-              <button id="sendChatButton">Ask</button>
+            <div class="prompt-row chat-input-row">
+              <input id="chatInput" type="text" placeholder="Ask about notes, diary, projects…">
+              <button id="sendChatButton" class="button-primary">Ask</button>
             </div>
           </section>
 
           <section id="mlTab" class="tab-panel">
             <div class="ml-grid">
               <div class="ml-card">
-                <span>Memory Model</span>
+                <span>Memory model</span>
                 <strong id="mlMemoryScore">0 signals</strong>
                 <p id="mlMemorySummary">Add notes and diary pages so Buddy can learn your patterns.</p>
               </div>
               <div class="ml-card">
-                <span>Top Category</span>
+                <span>Top category</span>
                 <strong id="mlTopCategory">None yet</strong>
                 <p id="mlCategorySummary">Categories will appear as notes are saved.</p>
               </div>
               <div class="ml-card">
-                <span>Project Focus</span>
+                <span>Project focus</span>
                 <strong id="mlProjectFocus">No project</strong>
                 <p id="mlProjectSummary">Buddy watches which projects keep showing up.</p>
               </div>
             </div>
             <div class="ml-section">
-              <h3>Category Signals</h3>
+              <h3>Category signals</h3>
               <div id="mlCategoryList" class="signal-list"></div>
             </div>
             <div class="ml-section">
-              <h3>Repeated Themes</h3>
+              <h3>Repeated themes</h3>
               <div id="mlThemeList" class="signal-list"></div>
             </div>
             <div class="ml-section">
-              <h3>Suggested Next Actions</h3>
+              <h3>Suggested next actions</h3>
               <div id="mlActionList" class="signal-list"></div>
             </div>
           </section>
 
           <section id="projectsTab" class="tab-panel">
-            <textarea id="projectIdeaInput" class="project-idea" placeholder="Describe a small project Buddy should generate."></textarea>
-            <button id="generateProjectButton">Generate Project</button>
+            <textarea id="projectIdeaInput" class="project-idea" placeholder="Describe a small project Buddy should generate from your notes."></textarea>
+            <button id="generateProjectButton" class="button-primary">Generate project</button>
             <div id="projectList" class="project-list"></div>
             <pre id="projectFiles" class="file-preview"></pre>
           </section>
 
           <section id="terminalTab" class="tab-panel">
-            <input id="tokenInput" type="password" placeholder="Buddy access token">
-            <select id="terminalProjectSelect"></select>
+            <label class="field">
+              <span class="field-label">Access token</span>
+              <input id="tokenInput" type="password" placeholder="Buddy access token">
+            </label>
+            <label class="field">
+              <span class="field-label">Workspace</span>
+              <select id="terminalProjectSelect"></select>
+            </label>
             <div class="prompt-row">
-              <input id="terminalInput" type="text" placeholder="npm install, git status, curl ...">
-              <button id="runCommandButton">Run</button>
+              <input id="terminalInput" type="text" placeholder="npm install, git status, curl …">
+              <button id="runCommandButton" class="button-primary">Run</button>
             </div>
             <pre id="terminalOutput" class="terminal-output"></pre>
           </section>

@@ -1,6 +1,6 @@
 {
-  "name": "Buddy",
-  "short_name": "Buddy",
+  "name": "Call Buddy",
+  "short_name": "Call Buddy",
   "description": "Private AI diary, notes, memory, projects, and terminal.",
   "start_url": "/",
   "scope": "/",
